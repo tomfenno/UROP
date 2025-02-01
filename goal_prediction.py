@@ -3,19 +3,31 @@ from copy import deepcopy
 from collections import deque
 import time
 
-def predict_goal(rows, columns, goals, path):
-    grid = np.full((rows, columns), '*', dtype='U1')
-    grid[path[0]] = 'S'
-    dummy_path = []
-    start_to_goals, user_to_goals, probabilities = [], [], []
-    for goal in goals:
-        grid[goal] = 'G'
-        start_to_goals.append(bfs(grid, path[0], goal, deepcopy(dummy_path)))
+# gs = []
+# p1 = []
+# print("Please specify the dimensions of the grid:")
+# rows, columns = map(int, input().split())
+# print("Grid is", rows, "x", columns)
+# print("Enter the number of goal states:")
+# num_of_goals = int(input())
+# print("For each goal, enter its coordinates:")
+# for i in range(num_of_goals):
+#     x, y = map(int, input().split())
+#     gs.append((x, y))
+# print("There is a goal at:")
+# for g in gs:
+#     print(g)
+# print("Enter the coordinates of# the start position:")
+# x, y = map(int, input().split())
+# p1.append((x, y))
+# print("The user will begin at:", p1)
+
+def predict_goal(grid, path):
     for i in range(len(path)):
         grid[path[i]] = 'x'
         for j in range(len(goals)):
             user_to_goals.append(bfs(grid, path[i], goals[j], deepcopy(dummy_path)))
-            prob = abs(((len(path) - 1) - user_to_goals[j]) / start_to_goals[j]) / len(goals)
+            
             probabilities.append((prob, i + 1))
         print(grid)
         print("Step", i, ":")
@@ -24,7 +36,8 @@ def predict_goal(rows, columns, goals, path):
         print("Probabilities:", probabilities[0])
         time.sleep(5)
 
-def bfs(matrix, start, end, path):
+def bfs(matrix, start, end):
+    path = []
     queue = deque([(start[0], start[1], 0)])
     while queue:
         i, j, steps = queue.popleft()
@@ -44,7 +57,38 @@ def in_bounds(matrix, position, path):
     else:
         return True
 
-gs = [(0,0), (0, 4)]
-p1 = [(3, 2)]
+start_to_goals, user_to_goals, user_to_each_goal, probabilities = [], [], [], []
+rows, columns = 4, 5
+goals = [(0,0), (0, 4)]
+path = [(3, 2), (2, 2)]
+start = path[0]
+grid = np.full((rows, columns), '*', dtype='U1')
+grid[path[0]] = 'S'
 
-predict_goal(4, 5, gs, p1)
+for goal in goals:
+    grid[goal] = 'G'
+    start_to_goals.append(bfs(grid, path[0], goal))
+
+for step in path:
+    for goal in goals:
+        user_to_each_goal.append(bfs(grid, step, goal))
+    user_to_goals.append((user_to_each_goal[0], user_to_each_goal[1]))
+    user_to_each_goal.clear()
+
+g1_likelihoods, g2_likelihoods, g1_probs, g2_probs = [], [], [], []
+
+
+print(grid)
+print(start_to_goals)
+print(user_to_goals)
+
+for i in range(len(path)):
+    # prob = abs(((i) - user_to_goals[i][0]) / start_to_goals[i])
+    # print("Step", i, "Goal 1:", user_to_goals[i][0])
+    # print("Step", i, "Goal 2:", user_to_goals[i][1])
+    g1_likelihoods.append(abs(((i) - user_to_goals[i][0]) / start_to_goals[0]))
+    g2_likelihoods.append(abs(((i) - user_to_goals[i][1]) / start_to_goals[1]))
+
+# print(grid)
+# print(start_to_goals)
+# print(user_to_goals)
