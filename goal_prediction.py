@@ -26,30 +26,31 @@ def predict_goal(rows, columns, goals, path):
         time.sleep(5)
 
 def bfs(matrix, start, end, path):
-    queue = deque([(start[0], start[1], 0)])
-    while queue:
-        i, j, steps = queue.popleft()
-        if (i, j) == end:
-            return steps
-        directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
-        for direction in directions:
-            if in_bounds(matrix, tuple(np.add((i, j), direction)), path):
-                path.append(tuple(np.add((i, j), direction)))
-                queue.append((i + direction[0], j + direction[1], steps + 1))
-    return float('-inf')
-    
-    # if not in_bounds(matrix, start, steps):
-    #     return float('inf')
-    # north = bfs(matrix, (i - 1, j), end, steps) + 1
-    # south = bfs(matrix, (i + 1, j), end, steps) + 1
-    # east = bfs(matrix, (i, j + 1), end, steps) + 1
-    # west = bfs(matrix, (i, j - 1), end, steps) + 1
-    # return min(north, south, east, west)
+    # queue = deque([(start[0], start[1], 0)])
+    # while queue:
+    #     i, j, steps = queue.popleft()
+    #     if (i, j) == end:
+    #         return steps
+    #     directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
+    #     for direction in directions:
+    #         if in_bounds(matrix, tuple(np.add((i, j), direction)), path):
+    #             path.append(tuple(np.add((i, j), direction)))
+    #             queue.append((i + direction[0], j + direction[1], steps + 1))
+    # return float('-inf')
+    steps = path
+    i, j = start
+    if not in_bounds(matrix, start, steps):
+        return float('inf')
+    north = bfs(matrix, (i - 1, j), end, steps) + 1
+    south = bfs(matrix, (i + 1, j), end, steps) + 1
+    east = bfs(matrix, (i, j + 1), end, steps) + 1
+    west = bfs(matrix, (i, j - 1), end, steps) + 1
+    return min(north, south, east, west)
     
 
 def in_bounds(matrix, position, path):
     i, j = position[0], position[1]
-    if i >= matrix.shape[0] or i < 0 or j >= matrix.shape[1] or j < 0 or position in path:
+    if i >= matrix.shape[0] or i < 0 or j >= matrix.shape[1]:
         return False
     else:
         return True
