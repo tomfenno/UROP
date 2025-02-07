@@ -56,45 +56,49 @@ def in_bounds(matrix, position, path):
         return False
     else:
         return True
+    
+def main():
+    start_to_goals, user_to_goals, user_to_each_goal, probabilities = [], [], [], []
+    rows, columns = 4, 5
+    goals = [(0,0), (0, 4)]
+    path = [(3, 2), (2, 2), (1, 2), (0, 2), (0, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4)]
+    start = path[0]
+    grid = np.full((rows, columns), '*', dtype='U1')
+    grid[path[0]] = 'S'
 
-start_to_goals, user_to_goals, user_to_each_goal, probabilities = [], [], [], []
-rows, columns = 4, 5
-goals = [(0,0), (0, 4)]
-path = [(3, 2), (2, 2), (1, 2), (0, 2), (0, 1), (0, 0)]
-start = path[0]
-grid = np.full((rows, columns), '*', dtype='U1')
-grid[path[0]] = 'S'
-
-for goal in goals:
-    grid[goal] = 'G'
-    start_to_goals.append(bfs(grid, path[0], goal))
-
-for step in path:
     for goal in goals:
-        user_to_each_goal.append(bfs(grid, step, goal))
-    user_to_goals.append((user_to_each_goal[0], user_to_each_goal[1]))
-    user_to_each_goal.clear()
+        grid[goal] = 'G'
+        start_to_goals.append(bfs(grid, path[0], goal))
 
-g1_likelihoods, g2_likelihoods, g1_probs, g2_probs = [], [], [], []
+    for step in path:
+        for goal in goals:
+            user_to_each_goal.append(bfs(grid, step, goal))
+        user_to_goals.append((user_to_each_goal[0], user_to_each_goal[1]))
+        user_to_each_goal.clear()
+
+    g1_likelihoods, g2_likelihoods, g1_probs, g2_probs = [], [], [], []
 
 
-print(grid)
-print(start_to_goals)
-print(user_to_goals)
+    print(grid)
+    print(start_to_goals)
+    print(user_to_goals)
 
-for i in range(len(path)):
-    # prob = abs(((i) - user_to_goals[i][0]) / start_to_goals[i])
-    # print("Step", i, "Goal 1:", user_to_goals[i][0])
-    # print("Step", i, "Goal 2:", user_to_goals[i][1])
-    g1_likelihoods.append(abs(((i) - user_to_goals[i][0]) / start_to_goals[0]))
-    g2_likelihoods.append(abs(((i) - user_to_goals[i][1]) / start_to_goals[1]))
+    for i in range(len(path)):
+        # prob = abs(((i) - user_to_goals[i][0]) / start_to_goals[i])
+        # print("Step", i, "Goal 1:", user_to_goals[i][0])
+        # print("Step", i, "Goal 2:", user_to_goals[i][1])
+        g1_likelihoods.append(abs(((i) - user_to_goals[i][0]) / start_to_goals[0]))
+        g2_likelihoods.append(abs(((i) - user_to_goals[i][1]) / start_to_goals[1]))
 
-for i in range(len(path)):
-    g1_probs.append(g1_likelihoods[i]/(g1_likelihoods[i] + g2_likelihoods[i]))
-    g2_probs.append(g2_likelihoods[i]/(g1_likelihoods[i] + g2_likelihoods[i]))
+    for i in range(len(path)):
+        g1_probs.append(round(g1_likelihoods[i]/(g1_likelihoods[i] + g2_likelihoods[i]), 2))
+        g2_probs.append(round(g2_likelihoods[i]/(g1_likelihoods[i] + g2_likelihoods[i]), 2))
 
-print("G1 probs:", g1_probs)
-print("G2 probs:", g2_probs)
-# print(grid)
-# print(start_to_goals)
-# print(user_to_goals)
+    print("G1 probs:", g1_probs)
+    print("G2 probs:", g2_probs)
+    # print(grid)
+    # print(start_to_goals)
+    # print(user_to_goals)
+
+if __name__ == "__main__":
+    main()
