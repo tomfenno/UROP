@@ -52,13 +52,13 @@ def main():
     # print("Enter the coordinates of the start position:")
     # x, y = map(int, input().split())
     # start = (x, y)
-    # print("The user will begin at:", start)
 
     # fixed values
     rows, columns = 4, 5
     goals = [(0,0), (0, 4)]
     start = (3, 2)
 
+    print("The user will begin at:", start)
     start_to_goals, user_to_goals = [], []
 
     grid = np.full((rows, columns), '*', dtype='U1')
