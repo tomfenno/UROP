@@ -33,62 +33,65 @@ def player_move(move):
                 return (0 ,1)
             case "w" | "W":
                 return (0, -1)
+        
+def manhattan_norm(current, goal):
+    return abs(current[0] - goal[0]) + abs(current[1] - goal[1])
     
 def main():
     # Code for reading input for different types of grids/goals
-    # goals = []
-    # print("Please specify the dimensions of the grid:")
-    # rows, columns = map(int, input().split())
-    # print("Grid is", rows, "x", columns)
-    # print("Enter the number of goal states:")
-    # num_of_goals = int(input())
-    # print("For each goal, enter its coordinates:")
-    # for i in range(num_of_goals):
-    #     x, y = map(int, input().split())
-    #     goals.append((x, y))
-    # print("There is a goal at:")
-    # for g in goals:
-    #     print(g)
-    # print("Enter the coordinates of the start position:")
-    # x, y = map(int, input().split())
-    # start = (x, y)
+    goals = []
+    print("Please specify the dimensions of the grid:")
+    rows, columns = map(int, input().split())
+    print("Grid is", rows, "x", columns)
+    print("Enter the number of goal states:")
+    num_of_goals = int(input())
+    print("For each goal, enter its coordinates:")
+    for i in range(num_of_goals):
+        x, y = map(int, input().split())
+        goals.append((x, y))
+    print("There is a goal at:")
+    for g in goals:
+        print(g)
+    print("Enter the coordinates of the start position:")
+    x, y = map(int, input().split())
+    start = (x, y)
 
     # fixed values
-    rows, columns = 4, 5
-    goals = [(0,0), (0, 4)]
-    start = (3, 2)
+    # rows, columns = 4, 5
+    # goals = [(0,0), (0, 4), (1, 1)]
+    # start = (3, 2)
 
     print("The user will begin at:", start)
-    start_to_goals, user_to_goals = [], []
-
-    grid = np.full((rows, columns), '*', dtype='U1')
+    grid = np.full((rows, columns), '*', dtype='U2')
     grid[start] = 'S'
-    for goal in goals:
-        grid[goal] = 'G'
-        start_to_goals.append(bfs(grid, start, goal))
+    for i in range(len(goals)):
+        grid[goals[i]] = 'G' + str(i + 1)
+        # TODO
+        # start_to_goals.append(manhattan_norm(start, goals[i]), goals[i])
 
     path = []
     path.append(start)
 
     move = (0, 0)
     user = start
+    predictions = []
 
     while move != "x":
         print(grid)
         for goal in goals:
-            user_to_goals.append(bfs(grid, user, goal))
-        goal1_prediction = abs(((len(path) - 1) - user_to_goals[0]) / start_to_goals[0])
-        goal2_prediction = abs(((len(path) - 1)  - user_to_goals[1]) / start_to_goals[1])
-        goal1_probability = round(goal1_prediction / (goal1_prediction + goal2_prediction), 2)
-        goal2_probability = round(goal2_prediction / (goal1_prediction + goal2_prediction), 2)
-        print("Goal 1 Probability:", goal1_probability)
-        print("Goal 2 Probability:", goal2_probability)
+            predictions.append((np.exp(-(len(path) - 1) - manhattan_norm(user, goal))) / np.exp(-manhattan_norm(start, goal)))
+            np_predictions = np.array(predictions[-len(goals):])
+            
+        probabilities = np_predictions/np.sum(np_predictions)
 
-        user_to_goals.clear()
+        for i in range(len(goals)):
+            print("Goal", i + 1, "probability:", round(probabilities[i - len(goals)], 2))
+
         move = player_move(input())
+        grid[user] = 'X'
         user = (path[-1][0] + move[0], + path[-1][1] + move[1])
         path.append(user)
-        grid[user] = 'X'
+        grid[user] = 'U'
         print("The user is now at:", user) 
         # time.sleep(1)
 
