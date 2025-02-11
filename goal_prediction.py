@@ -93,6 +93,7 @@ def main():
         path.append(user)
         grid[user] = 'U'
         print("The user is now at:", user) 
+        # print(goals)
         # time.sleep(1)
 
 if __name__ == "__main__":
