@@ -11,7 +11,7 @@ from __future__ import print_function
 # The above copyright notice and this permission notice shall be included in all copies or
 # substantial portions of the Software.
 # 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+# THE SOFTWARE IS PROVIDED `"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 # NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 # NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 # DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -26,8 +26,6 @@ from __future__ import print_function
 # Reinforcement Learning, An Introduction
 # MIT Press, 1998
 
-from future import standard_library
-standard_library.install_aliases()
 from builtins import range
 from builtins import object
 import MalmoPython
@@ -37,14 +35,37 @@ import os
 import random
 import sys
 import time
+import numpy as np
+
 if sys.version_info[0] == 2:
     # Workaround for https://github.com/PythonCharmers/python-future/issues/262
     import Tkinter as tk
 else:
     import tkinter as tk
 
-class TabQAgent(object):
-    """Tabular Q-learning agent for discrete state/action spaces."""
+def manhattan_norm(current, goal):
+        return abs(current[0] - goal[0]) + abs(current[1] - goal[1])
+
+def probabilities_step(grid, user):
+    global path, goals
+    print(grid)
+    for goal in goals:
+        predictions.append((np.exp(-(len(path) - 1) - manhattan_norm(user, goal))) / np.exp(-manhattan_norm(start, goal)))
+        np_predictions = np.array(predictions[-len(goals):])
+        
+    probabilities = np_predictions/np.sum(np_predictions)
+
+    for i in range(len(goals)):
+        print("Goal", i + 1, "probability:", round(probabilities[i - len(goals)], 6))
+
+    grid[user] = 'X'
+    path.append(user)
+    grid[user] = 'U'
+    print("The Agent is now at:", user)
+    return
+
+class Agent(object):
+    """Agent that will choose between goal states in the world."""
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -56,11 +77,12 @@ class TabQAgent(object):
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
 
         self.actions = ["movenorth 1", "movesouth 1", "movewest 1", "moveeast 1"]
-        self.path = []
+        # self.path = []
         self.canvas = None
         self.root = None
         
-    def act(self, world_state, agent_host):
+    
+    def act(self, world_state, backend_grid):
         """take 1 action in response to the current world state"""
         
         obs_text = world_state.observations[-1].text
@@ -69,8 +91,18 @@ class TabQAgent(object):
         if not u'XPos' in obs or not u'ZPos' in obs:
             self.logger.error("Incomplete observation received: %s" % obs_text)
             return 0
-        current_s = "%d:%d" % (int(obs[u'XPos']), int(obs[u'ZPos']))
-        print(current_s)
+        
+        # Original orientation (x, z)
+        # current_s = "%d:%d" % (int(obs[u'XPos']), int(obs[u'ZPos']))
+        
+        global prev_state, current_state
+        prev_state = current_state
+        current_state = (int(obs[u'ZPos']), int(obs[u'XPos']))
+
+        if manhattan_norm(prev_state, current_state) > 0:
+            probabilities_step(backend_grid, current_state)
+
+        current_s = "%d:%d" % (int(obs[u'ZPos']), int(obs[u'XPos']))
         self.logger.debug("State: %s (x = %.2f, z = %.2f)" % (current_s, float(obs[u'XPos']), float(obs[u'ZPos'])))
 
         # self.drawQ( curr_x = int(obs[u'XPos']), curr_y = int(obs[u'ZPos']) )
@@ -95,18 +127,28 @@ class TabQAgent(object):
     def run(self, agent_host):
         """run the agent on the world"""
         
+        # Set-up grid
+        print("The user will begin at:", start)
+        grid = np.full((rows, columns), '*', dtype='U2')
+        grid[start] = 'S'
+        for i in range(len(goals)):
+            grid[goals[i]] = 'G' + str(i + 1)
+        path.append(start)
+        print(grid)
+
+
         # main loop:
         world_state = agent_host.getWorldState()
         while world_state.is_mission_running:
             
             # wait until have received a valid observation
             while True:
-                time.sleep(1)
+                time.sleep(0.1)
                 world_state = agent_host.getWorldState()
                 for error in world_state.errors:
                     self.logger.error("Error: %s" % error.text)
                 if world_state.is_mission_running and len(world_state.observations)>0 and not world_state.observations[-1].text=="{}":
-                    self.act(world_state, agent_host)
+                    self.act(world_state, grid)
                     break
                 if not world_state.is_mission_running:
                     break
@@ -161,7 +203,16 @@ else:
     import functools
     print = functools.partial(print, flush=True)
 
-agent = TabQAgent()
+# Hard code to set-up backend grid
+rows, columns = 10, 15
+goals = [(1,1), (1, 13)]
+start = (8, 7)
+predictions = []
+current_state = start
+prev_state = start
+path = []
+
+agent = Agent()
 agent_host = MalmoPython.AgentHost()
 try:
     agent_host.parse( sys.argv )
@@ -174,57 +225,39 @@ if agent_host.receivedArgument("help"):
     exit(0)
 
 # -- set up the mission -- #
-mission_file = './test.xml'
-# mission_file = './goal_prediction.xml'
+mission_file = './goal_prediction.xml'
 with open(mission_file, 'r') as f:
     print("Loading mission from %s" % mission_file)
     mission_xml = f.read()
     my_mission = MalmoPython.MissionSpec(mission_xml, True)
 
 max_retries = 3
-
-# if sys.argv[1] == "test":
-#     num_repeats = 1
-# if agent_host.receivedArgument("test"):
-#     num_repeats = 1
-# else:
-#     num_repeats = 3
-num_repeats = 1
-
-cumulative_rewards = []
-for i in range(num_repeats):
-
-    print()
-    print('Repeat %d of %d' % ( i+1, num_repeats ))
     
-    my_mission_record = MalmoPython.MissionRecordSpec()
+my_mission_record = MalmoPython.MissionRecordSpec()
 
-    for retry in range(max_retries):
-        try:
-            agent_host.startMission( my_mission, my_mission_record )
-            break
-        except RuntimeError as e:
-            if retry == max_retries - 1:
-                print("Error starting mission:",e)
-                exit(1)
-            else:
-                time.sleep(2.5)
+for retry in range(max_retries):
+    try:
+        agent_host.startMission( my_mission, my_mission_record )
+        break
+    except RuntimeError as e:
+        if retry == max_retries - 1:
+            print("Error starting mission:",e)
+            exit(1)
+        else:
+            time.sleep(2.5)
 
-    print("Waiting for the mission to start", end=' ')
+print("Waiting for the mission to start", end=' ')
+world_state = agent_host.getWorldState()
+while not world_state.has_mission_begun:
+    print(".", end="")
+    time.sleep(0.1)
     world_state = agent_host.getWorldState()
-    while not world_state.has_mission_begun:
-        print(".", end="")
-        time.sleep(0.1)
-        world_state = agent_host.getWorldState()
-        for error in world_state.errors:
-            print("Error:",error.text)
-    print()
+    for error in world_state.errors:
+        print("Error:",error.text)
+print()
 
-    # -- run the agent in the world -- #
-    agent.run(agent_host)
-
-    # -- clean up -- #
-    time.sleep(0.5) # (let the Mod reset)
+# -- run the agent in the world -- #
+agent.run(agent_host)
 
 print("Done.")
 

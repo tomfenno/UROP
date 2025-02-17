@@ -24,42 +24,43 @@ def in_bounds(matrix, position, path):
         return True
 
 def player_move(move):
-    match move:
-            case "n" | "N":
-                return (-1, 0)
-            case "s" | "S":
-                return (1, 0)
-            case "e" | "E":
-                return (0 ,1)
-            case "w" | "W":
-                return (0, -1)
+    # match move:
+    #         case "n" | "N":
+    #             return (-1, 0)
+    #         case "s" | "S":
+    #             return (1, 0)
+    #         case "e" | "E":
+    #             return (0 ,1)
+    #         case "w" | "W":
+    #             return (0, -1)
+    return
         
 def manhattan_norm(current, goal):
     return abs(current[0] - goal[0]) + abs(current[1] - goal[1])
     
 def main():
     # Code for reading input for different types of grids/goals
-    goals = []
-    print("Please specify the dimensions of the grid:")
-    rows, columns = map(int, input().split())
-    print("Grid is", rows, "x", columns)
-    print("Enter the number of goal states:")
-    num_of_goals = int(input())
-    print("For each goal, enter its coordinates:")
-    for i in range(num_of_goals):
-        x, y = map(int, input().split())
-        goals.append((x, y))
-    print("There is a goal at:")
-    for g in goals:
-        print(g)
-    print("Enter the coordinates of the start position:")
-    x, y = map(int, input().split())
-    start = (x, y)
+    # goals = []
+    # print("Please specify the dimensions of the grid:")
+    # rows, columns = map(int, input().split())
+    # print("Grid is", rows, "x", columns)
+    # print("Enter the number of goal states:")
+    # num_of_goals = int(input())
+    # print("For each goal, enter its coordinates:")
+    # for i in range(num_of_goals):
+    #     x, y = map(int, input().split())
+    #     goals.append((x, y))
+    # print("There is a goal at:")
+    # for g in goals:
+    #     print(g)
+    # print("Enter the coordinates of the start position:")
+    # x, y = map(int, input().split())
+    # start = (x, y)
 
     # fixed values
-    # rows, columns = 4, 5
-    # goals = [(0,0), (0, 4), (1, 1)]
-    # start = (3, 2)
+    rows, columns = 10, 15
+    goals = [(1,1), (1, 13)]
+    start = (8, 7)
 
     print("The user will begin at:", start)
     grid = np.full((rows, columns), '*', dtype='U2')

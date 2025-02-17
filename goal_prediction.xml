@@ -16,13 +16,13 @@
       <!-- Default string for tutorial_6.py 3;7,220*1,5*3,2;3;,biome_2 -->
       <DrawingDecorator>
         <!-- coordinates for cuboid are inclusive -->
-        <DrawCuboid x1="0" y1="61" z1="0" x2="20" y2="64" z2="15" type="air" />            <!-- limits of our arena -->
-        <DrawCuboid x1="0"  y1="60" z1="0"  x2="20" y2="45" z2="15" type="sandstone" />      <!-- floor of the arena -->
-        <DrawBlock x="19"  y="60" z="14" type="lapis_block" />  <!-- the destination marker -->
-        <DrawBlock x="1"  y="60" z="14" type="lapis_block" />  <!-- the destination marker -->
+        <DrawCuboid x1="0" y1="61" z1="0" x2="14" y2="64" z2="9" type="air" />            <!-- limits of our arena -->
+        <DrawCuboid x1="0"  y1="60" z1="0"  x2="14" y2="45" z2="9" type="sandstone" />      <!-- floor of the arena -->
+        <DrawBlock x="1"  y="60" z="1" type="lapis_block" />  <!-- the destination marker -->
+        <DrawBlock x="13"  y="60" z="1" type="lapis_block" />  <!-- the destination marker -->
 
       </DrawingDecorator>
-      <ServerQuitFromTimeUp timeLimitMs="20000"/>
+      <ServerQuitFromTimeUp timeLimitMs="120000"/>
       <ServerQuitWhenAnyAgentFinishes/>
     </ServerHandlers>
   </ServerSection>
@@ -30,7 +30,7 @@
   <AgentSection mode="Survival">
     <Name>Cristina</Name>
     <AgentStart>
-      <Placement x="10.5" y="61.0" z="0.5" pitch="30" yaw="0"/>
+      <Placement x="7.5" y="61.0" z="8.5" pitch="30" yaw="180"/>
     </AgentStart>
     <AgentHandlers>
       <DiscreteMovementCommands/>
