@@ -2,7 +2,7 @@
 <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <About>
-    <Summary>Cliff walking mission based on Sutton and Barto.</Summary>
+    <Summary>Goal-inference test with two agents in grid environment.</Summary>
   </About>
 
   <ServerSection>
