@@ -53,8 +53,8 @@ def probabilities_step(grid, user):
         # print("total cost", goal, ":", np.exp(-(len(path) - 1)))
         # print("user->goal", goal, round(euclidean_distance(user_float, goal)))
         # print("whole thing", goal, (np.exp(-(len(path) - 1) - manhattan_norm(user, goal))) / np.exp(-manhattan_norm(start, goal)))
-        # prediction = (np.exp(-(len(path) - 1) - euclidean_distance(user_float, goal))) / np.exp(-euclidean_distance(start_float, goal))
-        prediction = (np.exp(-(len(path) - 1) - manhattan_norm(user, goal))) / np.exp(-manhattan_norm(start, goal))
+        prediction = (np.exp(-(len(path) - 1) - euclidean_distance(user_float, goal))) / np.exp(-euclidean_distance(start_float, goal))
+        # prediction = (np.exp(-(len(path) - 1) - manhattan_norm(user, goal))) / np.exp(-manhattan_norm(start, goal))
         predictions.append(prediction)
         np_predictions = np.array(predictions[-len(goals):])
         
@@ -102,8 +102,8 @@ class Agent(object):
         # print("current_state:", current_state_float)
         # print("euclidean_distance goal 1:", round(euclidean_distance(current_state_float, goals[0]), 4))
         # print("euclidean_distance goal 2:", round(euclidean_distance(current_state_float, goals[1]), 4))
-        # if manhattan_norm(prev_state, current_state) > 0:
-        probabilities_step(backend_grid, current_state)
+        #if euclidean_distance(prev_state, current_state_float) > 0:
+        probabilities_step(backend_grid, current_state_float)
 
         current_s = "%d:%d" % (int(obs[u'ZPos']), int(obs[u'XPos']))
         self.logger.debug("State: %s (x = %.2f, z = %.2f)" % (current_s, float(obs[u'XPos']), float(obs[u'ZPos'])))
